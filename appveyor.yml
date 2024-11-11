@@ -1,0 +1,26 @@
+# Este es un archivo de configuración YAML para AppVeyor.
+
+# Establecer la imagen de Windows para el entorno de construcción
+image: Visual Studio 2019
+
+# Instalar Ninja si no está disponible
+before_build:
+  - choco install ninja -y
+
+# El script para compilar tu proyecto
+build_script:
+  - git clone -q --branch=master https://github.com/WinterSquire/AlphaRing.git C:\projects\alpharing
+  - git checkout -qf 50ee54b8938320dd87bd1494a7c3035af94ee51a
+  - cd $env:APPVEYOR_BUILD_FOLDER
+  - mkdir build
+  - cd build
+  - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+  - ninja
+
+# Al finalizar la construcción, copiar los archivos generados a la carpeta Release y comprimirlos
+after_build:
+  - cd $env:APPVEYOR_BUILD_FOLDER
+  - mkdir Release
+  - copy-item ".\build\WTSAPI32.dll" ".\Release"
+  - copy-item ".\build\WTSAPI32.pdb" ".\Release"
+  - 7z a AlphaRing.zip ".\Release\."
